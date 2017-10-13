@@ -16,11 +16,27 @@ clamav_daemon_configuration_changes:
 clamav_daemon_state: started
 clamav_daemon_enabled: yes
 
+clamav_clamd_binary: '/usr/bin/clamd'
+clamav_freshclam_binary: '/usr/bin/freshclam'
+clamav_scan_binary: '/usr/bin/clamscan'
 
 # clamav_freshclam_daemon: 'clamav-freshclam'
 clamav_freshclam_daemon_state: started
 clamav_freshclam_daemon_enabled: yes
 
+# Settings used to check freshlog locking
+clamav_freshlog_lock_retries: 5
+clamav_freshlog_lock_delay: 5
+
+
+# General settings
+clamav_log_folder: '/var/log/clamav'
+clamav_config_folder: '/etc/clamav'
+clamav_config_owner: 'clamav'
+clamav_config_group: 'clamav'
+clamav_config_mode: '0644'
+
+clamav_freshclam_log_file_path: '{{ clamav_log_folder }}/freshclam.log'
 
 clamav_clamd_exclude_paths: []
 
@@ -33,18 +49,23 @@ clamav_cron_update_day: '*'
 clamav_cron_update_month: '*'
 
 # Scan cron job
+clamav_cron_scan_create_script: true
 clamav_clamd_cron_script_path: '/etc/clamav'
 clamav_clamd_cron_script: "{{ clamav_clamd_cron_script_path }}/clamd-cron.sh'"
 
+clamav_cron_emailto: 'george@blue-bag.com'
+clamav_cron_emailfrom: 'bbwwwserver@blue-bag.com'
 
-clamav_cron_scan_create_task: True
+clamav_cron_scan_log: 'cron_scan_job.log'
+
+clamav_cron_scan_create_task: false
 clamav_cron_scan_minute: 30
 clamav_cron_scan_hour: 2
 clamav_cron_scan_weekday: '*'
 clamav_cron_scan_day: '*'
 clamav_cron_scan_month: '*'
 clamav_cron_scan_dest:
-  - '/data'
+  - '/home'
   - '/tmp'
   - '/var/www'
 
@@ -73,8 +94,12 @@ clamav_logrotate_config:
       - 'missingok'
       - 'create 640 clamav adm'
       - 'postrotate'
-      - '/etc/init.d/clamav-freshclam reload-log > /dev/null'
-      - 'endscript'
+      -  'if [ -d /run/systemd/system ]; then'
+      -  '    systemctl -q is-active clamav-freshclam && systemctl kill --signal=SIGHUP clamav-freshclam || true'
+      -  'else'
+      -  '    /etc/init.d/clamav-freshclam reload-log > /dev/null || true'
+      -  '   fi'
+      -  'endscript'
   - filename: '/etc/logrotate.d/clamav-cron-jobs'
     log_pattern: '/var/log/clamav/cron*.log'
     options:
@@ -84,7 +109,6 @@ clamav_logrotate_config:
       - 'delaycompress'
       - 'missingok'
       - 'create 640 clamav adm'
-
 
 # Clamd config file variables
 # Note: if clamav_clamd_socket_type is 'local', then the variables
@@ -189,7 +213,7 @@ clamav_clamd_maxrechwp3: 16
 
 # Fresclam config file variables
 clamav_freshclam_database_owner: 'clamav'
-clamav_freshclam_update_log_file: "{{ clamav_log_folder }}/freshclam.log"
+clamav_freshclam_update_log_file: "{{ clamav_freshclam_log_file_path }}"
 clamav_freshclam_log_verbose: 'false'
 clamav_freshclam_log_syslog: 'false'
 clamav_freshclam_log_facility: 'LOG_LOCAL6'
