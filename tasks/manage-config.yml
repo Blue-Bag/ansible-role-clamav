@@ -1,0 +1,20 @@
+---
+
+- name: 'CONFIG | Manage main configuration'
+  template:
+    src: "{{ role_path }}/templates/clamd.conf.j2"
+    dest: "{{ clamav_config_folder }}/clamd.conf"
+    owner: "{{ clamav_config_owner }}"
+    group: "{{ clamav_config_group }}"
+    mode: "{{ clamav_config_mode }}"
+  notify: 'HANDLER | Restart clamd'
+
+
+- name: 'CONFIG | Manage freshclam configuration'
+  template:
+    src: "{{ role_path }}/templates/freshclam.conf.j2"
+    dest: "{{ clamav_config_folder }}/freshclam.conf"
+    owner: "{{ clamav_config_owner }}"
+    group: "{{ clamav_config_group }}"
+    mode: "{{ clamav_config_mode }}"
+  notify: 'HANDLER | Restart freshclam'

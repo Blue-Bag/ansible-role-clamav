@@ -1,23 +1,39 @@
 ---
 - name: Include OS-Specific variables
   include_vars: "{{ ansible_os_family }}.yml"
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::init'
+    - 'role::clamav::install'
 
 - include: setup-vars.yml
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::init'
+    - 'role::clamav::install'
 
 - name: Ensure ClamAV packages are installed.
   package: name={{ item }} state=present
   with_items: "{{ clamav_packages }}"
   register: clamav_packages_install
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::init'
+    - 'role::clamav::install'
 
 - name: Run freshclam after ClamAV packages change.
   command: freshclam
   when: clamav_packages_install.changed
   register: freshclam_result
-  notify: restart clamav daemon
+  notify: 'HANDLER | Restart clamd'
   # On Debian, freshclam is automatically run post-install, so this may fail.
   failed_when:
     - freshclam_result.rc != 0
     - freshclam_result.stderr.find('locked by another process') != -1
+
 
 - include: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
@@ -29,6 +45,16 @@
     line: "{{ item.line | default('') }}"
     state: "{{ item.state | default('present') }}"
   with_items: "{{ clamav_daemon_configuration_changes }}"
+  when: clamav_manual_config == false
+  tags:
+  - 'role::clamav'
+  - 'role::clamav::config'
+
+- include: manage-config.yml
+  when: clamav_manual_config
+  tags:
+  - 'role::clamav'
+  - 'role::clamav::config'
 
 - name: Ensure ClamAV daemon is running (if configured).
   service:
@@ -41,3 +67,23 @@
     name: "{{ clamav_freshclam_daemon }}"
     state: "{{ clamav_freshclam_daemon_state }}"
     enabled: "{{ clamav_freshclam_daemon_enabled }}"
+
+
+- name: 'CONFIG | Manage Crontab'
+  include: manage-crontab.yml
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+
+- name: 'CONFIG | Create logrotate configuration'
+  become: True
+  template:
+    src: "logrotate.j2"
+    dest: "{{ item.filename }}"
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: "{{ clamav_logrotate_config }}"
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'

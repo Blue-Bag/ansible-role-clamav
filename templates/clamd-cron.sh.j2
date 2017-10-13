@@ -1,0 +1,50 @@
+#!/bin/bash
+# written by George Boobyer - Blue-Bag Ltd
+# 13/10/2017
+# Script file for Clamav ansible role cron
+#
+
+LOGFILE="{{ clamav_log_folder ~ '/cron_scan_job.log}}";
+EMAIL_MSG="Please see the log file attached.";
+EMAIL_FROM="clamav-daily@example.com";
+EMAIL_TO="username@example.com";
+DIRTOSCAN="/home";
+
+# Update ClamAV database
+echo "Looking for ClamAV database updates...";
+freshclam --quiet;
+
+TODAY=$(date +%u);
+
+if [ "$TODAY" == "6" ];then
+ echo "Starting a full weekend scan.";
+
+ # be nice to others while scanning the entire root
+ nice -n5 clamscan -ri / --exclude-dir=/sys/ &>"$LOGFILE";
+else
+ DIRSIZE=$(du -sh "$DIRTOSCAN" 2>/dev/null | cut -f1);
+
+ echo "Starting a daily scan of "$DIRTOSCAN" directory.
+ Amount of data to be scanned is "$DIRSIZE".";
+
+ #clamscan -ri "$DIRTOSCAN" &>"$LOGFILE";
+ {{ clamav_scan_binary
+              ~ ' -ri ' ~ (clamav_cron_scan_dest | join(' '))
+              ~ ' --database=' ~ clamav_clamd_database_directory
+              ~ (clamav_cron_scan_exclude_dirs | map('regex_replace',
+                                                     '^(.*)$',
+                                                     ' --exclude-dir=\\1' )
+                                               | list
+                                               | join(''))
+              ~ ' --log=' ~ clamav_log_folder ~ '/cron_scan_job.log'}}"
+fi
+
+# get the value of "Infected lines"
+MALWARE=$(tail "$LOGFILE"|grep Infected|cut -d" " -f3);
+
+# if the value is not equal to zero, send an email with the log file attached
+if [ "$MALWARE" -ne "0" ];then
+  #using heirloom-mailx below
+  echo "$EMAIL_MSG"|mail -a "$LOGFILE" -s "Malware Found" -r "$EMAIL_FROM" "$EMAIL_TO";
+fi
+exit 0

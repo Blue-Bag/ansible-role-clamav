@@ -1,6 +1,26 @@
 ---
-- name: restart clamav daemon
+# Handlers main file for clamav role
+
+
+- name: 'HANDLER | Restart clamd'
+  become: True
   service:
     name: "{{ clamav_daemon }}"
-    state: restarted
+    state: 'restarted'
   when: clamav_daemon_state != 'stopped'
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::install'
+
+
+- name: 'HANDLER | Restart freshclam'
+  become: True
+  service:
+    name: "{{ clamav_freshclam_daemon }}"
+    state: 'restarted'
+  when: clamav_freshclam_daemon_state  != 'stopped'
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::install'
