@@ -16,10 +16,26 @@
     - 'role::clamav::install'
     - 'role::clamav::cron:'
 
+
+
+
 - name: Ensure ClamAV packages are installed.
   package: name={{ item }} state=present
   with_items: "{{ clamav_packages }}"
   register: clamav_packages_install
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::init'
+    - 'role::clamav::install'
+
+- name: Ensure required run folder is present
+  file:
+    path: "{{ clamav_daemon_rundir }}"
+    state: directory
+    owner: "{{ clamav_config_owner }}"
+    group: "{{ clamav_config_group }}"
+    mode: 0755
   tags:
     - 'role::clamav'
     - 'role::clamav::config'
@@ -112,3 +128,24 @@
   tags:
     - 'role::clamav'
     - 'role::clamav::config'
+
+
+- name: Manage the Eicar-Test-Signature file
+  block:
+    - copy:
+        content: 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
+        dest: '/var/www/clamtest.txt'
+        force: no
+        group: 'root'
+        owner: 'root'
+        mode: '0644'
+      when: clamav_testfile
+    - file:
+        path: '/var/www/clamtest.txt'
+        state: absent
+      when: not clamav_testfile
+  tags:
+    - 'role::clamav'
+    - 'role::clamav::config'
+    - 'role::clamav::test'
+
