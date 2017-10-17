@@ -3,7 +3,7 @@
 - name: 'CONFIG | Manage main configuration'
   template:
     src: "{{ role_path }}/templates/clamd.conf.j2"
-    dest: "{{ clamav_config_folder }}/clamd.conf"
+    dest: "{{ clamav_daemon_config_path }}/clamd.conf"
     owner: "{{ clamav_config_owner }}"
     group: "{{ clamav_config_group }}"
     mode: "{{ clamav_config_mode }}"
@@ -13,7 +13,7 @@
 - name: 'CONFIG | Manage freshclam configuration'
   template:
     src: "{{ role_path }}/templates/freshclam.conf.j2"
-    dest: "{{ clamav_config_folder }}/freshclam.conf"
+    dest: "{{ clamav_daemon_config_path }}/freshclam.conf"
     owner: "{{ clamav_config_owner }}"
     group: "{{ clamav_config_group }}"
     mode: "{{ clamav_config_mode }}"
