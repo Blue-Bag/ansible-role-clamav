@@ -55,8 +55,8 @@ clamav_cron_scan_create_script: true
 clamav_clamd_cron_script_path: '/etc/clamav'
 clamav_clamd_cron_script: "{{ clamav_clamd_cron_script_path }}/clamd-cron.sh'"
 
-clamav_cron_emailto: 'george@blue-bag.com'
-clamav_cron_emailfrom: 'bbwwwserver@blue-bag.com'
+clamav_cron_emailto: 'admin@example.com'
+clamav_cron_emailfrom: '{{ inventory_hostname_short }}@example.com'
 
 clamav_cron_scan_log: 'cron_scan_job.log'
 
