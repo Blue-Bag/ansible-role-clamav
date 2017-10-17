@@ -3,7 +3,7 @@
 # clamav_packages: []
 # clamav_daemon_config_path: ''
 
-# we can control the entitre config or just change a few items
+# we can control the entire config or just change a few items
 clamav_manual_config: true
 
 clamav_daemon_configuration_changes:
@@ -39,6 +39,8 @@ clamav_config_mode: '0644'
 clamav_freshclam_log_file_path: '{{ clamav_log_folder }}/freshclam.log'
 
 clamav_clamd_exclude_paths: []
+
+clamav_testfile: true
 
 # Virus database update cron job
 clamav_cron_update_create_task: True
