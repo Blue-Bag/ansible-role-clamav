@@ -8,7 +8,7 @@
     - 'role::clamav::install'
     - 'role::clamav::cron:'
 
-- include: setup-vars.yml
+- import_tasks: setup-vars.yml
   tags:
     - 'role::clamav'
     - 'role::clamav::config'
@@ -53,7 +53,7 @@
     - freshclam_result.stderr.find('locked by another process') != -1
 
 
-- include: setup-RedHat.yml
+- import_tasks: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
 
 - name: Change configuration for the ClamAV daemon.
@@ -68,7 +68,7 @@
   - 'role::clamav'
   - 'role::clamav::config'
 
-- include: manage-config.yml
+- import_tasks: manage-config.yml
   when: clamav_manual_config
   tags:
   - 'role::clamav'
@@ -110,7 +110,7 @@
     - 'role::clamav::config'
 
 - name: 'CONFIG | Manage Crontab'
-  include: manage-crontab.yml
+  import_tasks: manage-crontab.yml
   tags:
     - 'role::clamav'
     - 'role::clamav::config'
