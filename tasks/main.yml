@@ -58,7 +58,7 @@
 
 - name: Change configuration for the ClamAV daemon.
   lineinfile:
-    path: "{{ clamav_daemon_config_path }}"
+    path: "{{ clamav_daemon_config_path }}/{{ clamav_daemon_config_file }}"
     regexp: '{{ item.regexp }}'
     line: "{{ item.line | default('') }}"
     state: "{{ item.state | default('present') }}"
