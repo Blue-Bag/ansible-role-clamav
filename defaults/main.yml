@@ -74,6 +74,8 @@ clamav_cron_scan_dest:
 clamav_cron_scan_exclude_dirs: "{{ clamav_clamd_exclude_paths }}"
 
 # Logrotate configuration
+
+
 clamav_logrotate_config:
   - filename: '/etc/logrotate.d/clamav-daemon'
     log_pattern: '/var/log/clamav/clamav.log'
@@ -84,6 +86,11 @@ clamav_logrotate_config:
       - 'delaycompress'
       - 'create 640 clamav adm'
       - 'postrotate'
+      - 'if [ -d /run/systemd/system ]; then'
+      - '    systemctl -q is-active clamav-daemon && systemctl kill --signal=SIGHUP clamav-daemon || true'
+      - ' else'
+      - '    /etc/init.d/clamav-daemon reload-log > /dev/null || true'
+      - 'fi'
       - '/etc/init.d/clamav-daemon reload-log > /dev/null'
       - 'endscript'
   - filename: '/etc/logrotate.d/clamav-freshclam'
@@ -100,7 +107,7 @@ clamav_logrotate_config:
       -  '    systemctl -q is-active clamav-freshclam && systemctl kill --signal=SIGHUP clamav-freshclam || true'
       -  'else'
       -  '    /etc/init.d/clamav-freshclam reload-log > /dev/null || true'
-      -  '   fi'
+      -  'fi'
       -  'endscript'
   - filename: '/etc/logrotate.d/clamav-cron-jobs'
     log_pattern: '/var/log/clamav/cron*.log'
