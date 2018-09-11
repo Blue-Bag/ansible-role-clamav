@@ -134,14 +134,14 @@
   block:
     - copy:
         content: 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
-        dest: '/var/www/clamtest.txt'
+        dest: '/var/local/clamtest.txt'
         force: no
         group: 'root'
         owner: 'root'
         mode: '0644'
       when: clamav_testfile
     - file:
-        path: '/var/www/clamtest.txt'
+        path: '/var/local/clamtest.txt'
         state: absent
       when: not clamav_testfile
   tags:
