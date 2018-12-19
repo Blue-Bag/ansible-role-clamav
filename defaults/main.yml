@@ -41,6 +41,7 @@ clamav_freshclam_log_file_path: '{{ clamav_log_folder }}/freshclam.log'
 clamav_clamd_exclude_paths: []
 
 clamav_testfile: true
+clamav_testfile_path: '/var/local/clamtest.txt'
 
 # Virus database update cron job
 clamav_cron_update_create_task: True
@@ -70,6 +71,7 @@ clamav_cron_scan_dest:
   - '/home'
   - '/tmp'
   - '/var/www'
+  - '/usr/local'
 
 clamav_cron_scan_exclude_dirs: "{{ clamav_clamd_exclude_paths }}"
 

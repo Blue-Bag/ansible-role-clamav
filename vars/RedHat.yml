@@ -3,6 +3,8 @@ clamav_daemon_localsocket: /var/run/clamd.scan/clamd.sock
 clamav_daemon_config_path: /etc/clamd.d/
 clamav_daemon_config_file: scan.conf
 
+freshclam_binary: 'freshclam'
+
 __clamav_daemon: 'clamd@scan'
 __clamav_freshclam_daemon: 'clamd-freshclam'
 __clamav_packages:

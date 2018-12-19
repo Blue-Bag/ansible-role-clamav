@@ -102,7 +102,7 @@
 - name: 'CONFIG | Update Clamav signatures if packages updated'
   become: True
   command: >
-    {{ clamav_freshclam_daemon }} -u {{ clamav_config_owner }}
+    {{ freshclam_binary }} -u {{ clamav_config_owner }}
       --datadir {{ clamav_clamd_database_directory }}
   when: "clamav_packages_install.changed | bool"
   tags:
@@ -134,7 +134,7 @@
   block:
     - copy:
         content: 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
-        dest: '/var/local/clamtest.txt'
+        dest: "{{ clamav_testfile_path | default('/var/local/clamtest.txt')"
         force: no
         group: 'root'
         owner: 'root'
