@@ -6,6 +6,8 @@
 # we can control the entire config or just change a few items
 clamav_manual_config: true
 
+clamav_version: 100
+
 clamav_daemon_configuration_changes:
   - regexp: '^.*Example$'
     state: absent
@@ -73,6 +75,10 @@ clamav_cron_scan_dest:
   - '/var/www'
   - '/usr/local'
 
+# new options
+clamav_clamd_preludeenable: 'no'
+clamav_clamd_preludeanalyzername: 'ClamAV'
+
 clamav_cron_scan_exclude_dirs: "{{ clamav_clamd_exclude_paths }}"
 
 # Logrotate configuration
@@ -137,7 +143,9 @@ clamav_clamd_local_socket_group: 'clamav'
 clamav_clamd_local_socket_mode: 666
 clamav_clamd_tcp_socket: 3310
 clamav_clamd_user: 'clamav'
+## deprecated
 clamav_clamd_allow_supplementary_groups: 'true'
+##
 clamav_clamd_scan_mail: 'true'
 clamav_clamd_scan_archive: 'true'
 clamav_clamd_archive_block_encrypted: 'false'

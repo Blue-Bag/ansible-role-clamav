@@ -9,7 +9,9 @@ LocalSocketMode {{ clamav_clamd_local_socket_mode }}
 TCPSocket {{ clamav_clamd_tcp_socket }}
 {% endif %}
 User {{ clamav_clamd_user }}
-AllowSupplementaryGroups {{ clamav_clamd_allow_supplementary_groups }}
+{% if clamav_version < 100  %}
+AllowSupplementaryGroups {{ clamav_clamd_allow_supplementary_groups }} %}
+{% endif %}
 ScanMail {{ clamav_clamd_scan_mail }}
 ScanArchive {{ clamav_clamd_scan_archive }}
 ArchiveBlockEncrypted {{ clamav_clamd_archive_block_encrypted }}
@@ -24,7 +26,10 @@ LogRotate {{ clamav_clamd_log_rotate }}
 LogFacility {{ clamav_clamd_log_facility }}
 LogClean {{ clamav_clamd_log_clean }}
 LogVerbose {{ clamav_clamd_log_verbose }}
-PidFile {{ clamav_clamd_pid_file }}
+{% if clamav_version >= 100  %}
+PreludeEnable {{ clamav_clamd_preludeenable | default('no')}}
+PreludeAnalyzerName {{ clamav_clamd_preludeanalyzername }}
+{% endif %}
 DatabaseDirectory {{ clamav_clamd_database_directory }}
 OfficialDatabaseOnly {{ clamav_clamd_official_database_only }}
 SelfCheck {{ clamav_clamd_self_check }}
@@ -81,10 +86,12 @@ PCREMaxFileSize {{ clamav_clamd_pcremaxfilesize }}
 ScanXMLDOCS {{ clamav_clamd_scanxmldocs }}
 ScanHWP3 {{ clamav_clamd_scanhwp3 }}
 MaxRecHWP3 {{ clamav_clamd_maxrechwp3 }}
+{% if clamav_version < 100  %}
 StatsEnabled {{ clamav_clamd_stats_enabled }}
 StatsPEDisabled {{ clamav_clamd_stats_pe_disabled }}
 StatsHostID {{ clamav_clamd_stats_host_id }}
 StatsTimeout {{ clamav_clamd_stats_timeout }}
+{% endif %}
 StreamMaxLength {{ clamav_clamd_stream_max_length }}
 LogFile {{ clamav_clamd_log_file }}
 LogTime {{ clamav_clamd_log_time }}
@@ -93,4 +100,4 @@ LogFileMaxSize {{ clamav_clamd_log_file_max_size }}
 Bytecode {{ clamav_clamd_bytecode }}
 BytecodeSecurity {{ clamav_clamd_bytecode_security }}
 BytecodeTimeout {{ clamav_clamd_bytecode_timeout }}
-
+PidFile {{ clamav_clamd_pid_file }}
