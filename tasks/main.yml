@@ -134,7 +134,7 @@
   block:
     - copy:
         content: 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'
-        dest: "{{ clamav_testfile_path | default('/var/local/clamtest.txt')"
+        dest: "{{ clamav_testfile_path }}"
         force: no
         group: 'root'
         owner: 'root'
@@ -148,4 +148,3 @@
     - 'role::clamav'
     - 'role::clamav::config'
     - 'role::clamav::test'
-
