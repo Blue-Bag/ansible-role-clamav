@@ -197,12 +197,14 @@ clamav_clamd_max_queue: 100
 clamav_clamd_extended_detection_info: 'true'
 clamav_clamd_ole2_block_macros: 'false'
 clamav_clamd_scan_on_access: 'false'
+clamav_clamd_on_access_max_file_size: '5M'
 clamav_clamd_allow_all_match_scan: 'true'
 clamav_clamd_force_to_disk: 'false'
 clamav_clamd_disable_cert_check: 'false'
 clamav_clamd_disable_cache: 'false'
 clamav_clamd_max_scan_size: '100M'
 clamav_clamd_max_file_size: '25M'
+clamav_clamd_max_scan_time: '120000'
 clamav_clamd_max_recursion: 16
 clamav_clamd_max_files: 10000
 clamav_clamd_max_partitions: 50

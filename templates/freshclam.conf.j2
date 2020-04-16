@@ -13,7 +13,7 @@ Debug {{ clamav_freshclam_debug }}
 MaxAttempts {{ clamav_freshclam_max_attempts }}
 DatabaseDirectory {{ clamav_freshclam_database_directory }}
 DNSDatabaseInfo {{ clamav_freshclam_dns_database_info }}
-AllowSupplementaryGroups {{ clamav_freshclam_allow_supplementary_groups }}
+#AllowSupplementaryGroups {{ clamav_freshclam_allow_supplementary_groups }}
 PidFile {{ clamav_freshclam_pid_file }}
 ConnectTimeout {{ clamav_freshclam_connect_timeout }}
 ReceiveTimeout {{ clamav_freshclam_receive_timeout }}
@@ -22,7 +22,7 @@ ScriptedUpdates {{ clamav_freshclam_scripted_updates }}
 CompressLocalDatabase {{ clamav_freshclam_compress_local_database }}
 SafeBrowsing {{ clamav_freshclam_safebrowsing }}
 Bytecode {{ clamav_freshclam_bytecode }}
-NotifyClamd {{ clamav_daemon_config_path }}
+NotifyClamd {{ clamav_daemon_config_path }}/{{ clamav_daemon_config_file }}
 # Check for new database {{ clamav_freshclam_checks }} times a day
 Checks {{ clamav_freshclam_checks }}
 {% if clamav_freshclam_database_mirror is defined %}
