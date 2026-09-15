@@ -21,7 +21,7 @@
 - name: Put up cron script file
   template:
     src: "clamd-cron.sh.j2"
-    dest: "/etc/clamav/clamd-cron.sh"
+    dest: "{{ clamav_clamd_cron_script_path }}/clamd-cron.sh"
     backup: no
     mode: 0750
     owner: 'root'
@@ -38,7 +38,7 @@
     weekday: "{{ clamav_cron_scan_weekday }}"
     day: "{{ clamav_cron_scan_day }}"
     month: "{{ clamav_cron_scan_month }}"
-    job: "/etc/clamav/clamd-cron.sh"
+    job: "{{ clamav_clamd_cron_script_path }}/clamd-cron.sh"
     user: 'root'
   when: "clamav_cron_scan_create_script | bool"
 
