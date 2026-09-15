@@ -21,6 +21,7 @@ clamav_daemon_enabled: yes
 clamav_clamd_binary: '/usr/bin/clamd'
 clamav_freshclam_binary: '/usr/bin/freshclam'
 clamav_scan_binary: '/usr/bin/clamscan'
+clamav_clamdscan_binary: '/usr/bin/clamdscan'
 
 # clamav_freshclam_daemon: 'clamav-freshclam'
 clamav_freshclam_daemon_state: started
@@ -41,12 +42,22 @@ clamav_config_mode: '0644'
 clamav_freshclam_log_file_path: '{{ clamav_log_folder }}/freshclam.log'
 
 clamav_clamd_exclude_paths: []
+  # -  '^/sys/'
+  # - '^/proc/'
+  # - '^/dev/'
+  # - '^/run/'
+  # - '^/snap/'
+  # - '/vendor/'
+  # - '/node_modules/'
+  # - '/\.git/'
+  # - '/core/'
 
 clamav_testfile: true
 clamav_testfile_path: '/var/local/clamtest.txt'
 
 # Virus database update cron job
-clamav_cron_update_create_task: True
+# should be handled automatically by fresclam
+clamav_cron_update_create_task: False 
 clamav_cron_update_minute: '0'
 clamav_cron_update_hour: '2'
 clamav_cron_update_weekday: '*'
@@ -55,7 +66,7 @@ clamav_cron_update_month: '*'
 
 # Scan cron job
 clamav_cron_scan_create_script: true
-clamav_clamd_cron_script_path: '/etc/clamav'
+clamav_clamd_cron_script_path: '/usr/local/sbin'
 clamav_clamd_cron_script: "{{ clamav_clamd_cron_script_path }}/clamd-cron.sh'"
 
 clamav_cron_emailto: 'admin@example.com'
@@ -149,11 +160,11 @@ clamav_clamd_allow_supplementary_groups: 'true'
 clamav_clamd_scan_mail: 'true'
 clamav_clamd_scan_archive: 'true'
 clamav_clamd_archive_block_encrypted: 'false'
-clamav_clamd_max_directory_recursion: 15
+clamav_clamd_max_directory_recursion: 25
 clamav_clamd_follow_directory_symlinks: 'false'
 clamav_clamd_follow_file_symlinks: 'false'
 clamav_clamd_read_timeout: 180
-clamav_clamd_max_threads: 12
+clamav_clamd_max_threads: 2
 clamav_clamd_max_connection_queue_length: 15
 clamav_clamd_log_syslog: 'false'
 clamav_clamd_log_rotate: 'true'
@@ -197,12 +208,14 @@ clamav_clamd_max_queue: 100
 clamav_clamd_extended_detection_info: 'true'
 clamav_clamd_ole2_block_macros: 'false'
 clamav_clamd_scan_on_access: 'false'
+clamav_clamd_on_access_max_file_size: '5M'
 clamav_clamd_allow_all_match_scan: 'true'
 clamav_clamd_force_to_disk: 'false'
 clamav_clamd_disable_cert_check: 'false'
 clamav_clamd_disable_cache: 'false'
 clamav_clamd_max_scan_size: '100M'
 clamav_clamd_max_file_size: '25M'
+clamav_clamd_max_scan_time: '120000'
 clamav_clamd_max_recursion: 16
 clamav_clamd_max_files: 10000
 clamav_clamd_max_partitions: 50

@@ -1,6 +1,6 @@
 ---
 - name: Include OS-Specific variables
-  include_vars: "{{ ansible_os_family }}.yml"
+  include_vars: "{{ ansible_facts['os_family'] }}.yml"
   tags:
     - 'role::clamav'
     - 'role::clamav::config'
@@ -54,7 +54,7 @@
 
 
 - import_tasks: setup-RedHat.yml
-  when: ansible_os_family == 'RedHat'
+  when: ansible_facts['os_family'] == 'RedHat'
 
 - name: Change configuration for the ClamAV daemon.
   lineinfile:

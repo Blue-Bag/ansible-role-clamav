@@ -2,50 +2,97 @@
 # written by George Boobyer - Blue-Bag Ltd
 # original https://www.lisenet.com/2014/automate-clamav-to-perform-daily-system-scan-and-send-email-notifications-on-linux/
 # 13/10/2017
-# Script file for Clamav ansible role cron
+# Revised 2026-03-31: performance fixes, monit integration, clamdscan support
 #
+# Prerequisites:
+#   - clamd must be running (systemctl status clamav-daemon)
+#   - clamdscan must be available (provided by clamav-daemon package)
+#   - monit must have a check named 'loadavg' (adjust MONIT_CHECKS if different)
+#   - freshclam managed by clamav-freshclam.service (not this script)
+#   - ExcludePath directives configured in /etc/clamav/clamd.conf
+#
+
+set -euo pipefail
 
 LOGFILE="{{ clamav_log_folder }}/{{ clamav_cron_scan_log }}";
 EMAIL_MSG="Infection found as a result of latest Clamav scan. Please see the log file attached.";
 EMAIL_FROM="{{ clamav_cron_emailfrom }}";
 EMAIL_TO="{{ clamav_cron_emailto }}";
-DIRTOSCAN="/var/www";
 
-# Update ClamAV database
-echo "Looking for ClamAV database updates...";
-freshclam --quiet;
+# Directories for daily scan
+DIRS_DAILY="{{ clamav_cron_scan_dest | join(' ') }}"
 
-TODAY=$(date +%u);
+# Monit check name(s) to suppress during scan — space-separated if multiple
+MONIT_CHECKS="localhost"
 
-if [ "$TODAY" == "6" ];then
- echo "Starting a full weekend scan.";
-
- # be nice to others while scanning the entire root
- nice -n5 {{ clamav_scan_binary }} -ri / --exclude-dir=/sys/ &>"$LOGFILE";
+# Scanner selection: use clamdscan if clamd is running, fall back to clamscan
+# Exclusions for clamdscan are handled in /etc/clamav/clamd.conf via ExcludePath
+# Exclusions for clamscan fallback are handled via --exclude-dir below
+if systemctl is-active --quiet clamav-daemon 2>/dev/null; then
+    SCANNER="{{ clamav_clamdscan_binary }}"
+    SCAN_OPTS="--infected --fdpass"
+    EXCLUDES=""
 else
- DIRSIZE=$(du -sh "$DIRTOSCAN" 2>/dev/null | cut -f1);
-
- echo "Starting a daily scan of "$DIRTOSCAN" directory.
- Amount of data to be scanned is "$DIRSIZE".";
-
- #clamscan -ri "$DIRTOSCAN" &>"$LOGFILE";
- {{ clamav_scan_binary
-              ~ ' -ri ' ~ (clamav_cron_scan_dest | join(' '))
-              ~ ' --database=' ~ clamav_clamd_database_directory
-              ~ (clamav_cron_scan_exclude_dirs | map('regex_replace',
-                                                     '^(.*)$',
-                                                     ' --exclude-dir=\\1' )
-                                               | list
-                                               | join(''))
-              ~ ' --log=' ~ clamav_log_folder ~ '/' ~ clamav_cron_scan_log }}
+    SCANNER="{{ clamav_scan_binary }}"
+    SCAN_OPTS="-ri --database={{ clamav_clamd_database_directory }}"
+    EXCLUDES="--exclude-dir=vendor --exclude-dir=node_modules --exclude-dir=\.git --exclude-dir=core"
+    EXCLUDES="$EXCLUDES --exclude-dir=^/sys/ --exclude-dir=^/proc/ --exclude-dir=^/dev/ --exclude-dir=^/run/ --exclude-dir=^/snap/"
+    echo "WARNING: clamd not running, falling back to clamscan (high resource usage expected)" >&2
 fi
 
-# get the value of "Infected lines"
-MALWARE=$(tail "$LOGFILE"|grep Infected|cut -d" " -f3);
+# --- Monit suppression functions ---
+monit_unmonitor() {
+    if command -v monit &>/dev/null; then
+        for check in $MONIT_CHECKS; do
+            monit unmonitor "$check" 2>/dev/null && \
+                echo "Monit: unmonitored '$check'" || true
+        done
+    fi
+}
 
-# if the value is not equal to zero, send an email with the log file attached
-if [ "$MALWARE" -ne "0" ];then
-  #using mutt below
-  echo "$EMAIL_MSG"|mutt -a "$LOGFILE" -s "{{ ansible_hostname }} : Malware Found"  -- "$EMAIL_TO";
+monit_monitor() {
+    if command -v monit &>/dev/null; then
+        for check in $MONIT_CHECKS; do
+            monit monitor "$check" 2>/dev/null && \
+                echo "Monit: re-monitored '$check'" || true
+        done
+    fi
+}
+
+# Ensure monit checks are re-enabled on exit (clean or otherwise)
+trap monit_monitor EXIT
+
+# --- Suppress monit load average alerts ---
+monit_unmonitor
+
+TODAY=$(date +%u)
+
+if [ "$TODAY" -eq 6 ]; then
+    echo "Starting full weekend scan..."
+    # ionice -c3 = idle I/O class — only uses I/O when nothing else needs it
+    # nice -n 19 = lowest CPU priority
+    ionice -c3 nice -n 19 $SCANNER $SCAN_OPTS \
+        $EXCLUDES \
+        / --log="$LOGFILE" 2>&1 | grep -v "cli_realpath: Invalid arguments" || true
+else
+    DIRSIZE=$(du -sh $DIRS_DAILY 2>/dev/null | awk '{sum+=$1} END {print sum"G approx"}')
+    echo "Starting daily scan of: $DIRS_DAILY"
+    echo "Estimated data to scan: $DIRSIZE"
+
+    ionice -c3 nice -n 19 $SCANNER $SCAN_OPTS \
+        $EXCLUDES \
+        $DIRS_DAILY --log="$LOGFILE" 2>&1 | grep -v "cli_realpath: Invalid arguments" || true
 fi
+
+# --- Check for infections ---
+MALWARE=$(grep -c "FOUND$" "$LOGFILE" 2>/dev/null || true)
+
+if [ "${MALWARE:-0}" -gt 0 ]; then
+    echo "$EMAIL_MSG" | mutt -a "$LOGFILE" -s "{{ ansible_hostname }} : Malware Found ($MALWARE files)" -- "$EMAIL_TO"
+    echo "ALERT: $MALWARE infected file(s) found — email sent to $EMAIL_TO"
+else
+    echo "Scan complete — no infections found."
+fi
+
+# monit re-monitoring is handled by the EXIT trap
 exit 0

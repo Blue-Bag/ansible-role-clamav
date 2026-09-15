@@ -1,4 +1,4 @@
-# {{ ansible_managed }}
+# {{ ansible_managed | comment }}
 
 {% if clamav_clamd_socket_type == 'local' %}
 LocalSocket {{ clamav_clamd_local_socket }}
@@ -45,7 +45,7 @@ MaxHTMLNoTags {{ clamav_clamd_max_html_no_tags }}
 MaxScriptNormalize {{ clamav_clamd_max_script_normalize }}
 MaxZipTypeRcg {{ clamav_clamd_max_zip_type_rcg }}
 ScanSWF {{ clamav_clamd_scan_swf }}
-DetectBrokenExecutables {{ clamav_clamd_detect_broken_executables }}
+AlertBrokenExecutables {{ clamav_clamd_detect_broken_executables }}
 ExitOnOOM {{ clamav_clamd_exit_on_oom }}
 LeaveTemporaryFiles {{ clamav_clamd_leave_temporary_files }}
 AlgorithmicDetection {{ clamav_clamd_algorithmic_detection }}
@@ -69,12 +69,14 @@ SendBufTimeout {{ clamav_clamd_send_buf_timeout }}
 MaxQueue {{ clamav_clamd_max_queue }}
 ExtendedDetectionInfo {{ clamav_clamd_extended_detection_info }}
 OLE2BlockMacros {{ clamav_clamd_ole2_block_macros }}
-ScanOnAccess {{ clamav_clamd_scan_on_access }}
+#ScanOnAccess {{ clamav_clamd_scan_on_access }}
+OnAccessMaxFileSize {{ clamav_clamd_on_access_max_file_size }}
 AllowAllMatchScan {{ clamav_clamd_allow_all_match_scan }}
 ForceToDisk {{ clamav_clamd_force_to_disk }}
 DisableCertCheck {{ clamav_clamd_disable_cert_check }}
 DisableCache {{ clamav_clamd_disable_cache }}
 MaxScanSize {{ clamav_clamd_max_scan_size }}
+MaxScanTime {{ clamav_clamd_max_scan_time }}
 MaxFileSize {{ clamav_clamd_max_file_size }}
 MaxRecursion {{ clamav_clamd_max_recursion }}
 MaxFiles {{ clamav_clamd_max_files }}
